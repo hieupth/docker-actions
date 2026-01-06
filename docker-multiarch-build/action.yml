@@ -41,26 +41,41 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: docker/setup-qemu-action@v3
+    - 
+      name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@v1.3.1
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+    - 
+      name: Setup QEMU
+      uses: docker/setup-qemu-action@v3
       with:
         platforms: all
-
-    - uses: docker/setup-buildx-action@v3
-
-    - uses: docker/login-action@v3
+    - 
+      name: Setup Buildx
+      uses: docker/setup-buildx-action@v3
+    - 
+      name: Docker login
+      uses: docker/login-action@v3
       with:
         registry: ${{ inputs.registry }}
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
-
-    - name: Normalize platform tag
+    - 
+      name: Normalize platform tag
       id: plat
       shell: bash
       run: |
         set -euo pipefail
         echo "plat_tag=${{ inputs.platform }}" | sed 's|/|-|g' >> "$GITHUB_OUTPUT"
-
-    - name: Build and push (by digest)
+    - 
+      name: Build and push (by digest)
       id: build
       uses: docker/build-push-action@v6
       with:
@@ -72,15 +87,15 @@ runs:
         # Docker-recommended pattern for later manifest merge: push-by-digest + name-canonical  [oai_citation:3‡Docker Documentation](https://docs.docker.com/build/ci/github-actions/multi-platform/?utm_source=chatgpt.com)
         outputs: |
           type=image,name=${{ inputs.image }},push-by-digest=true,name-canonical=true,push=true
-
-    - name: Write digest file
+    - 
+      name: Write digest file
       shell: bash
       run: |
         set -euo pipefail
         mkdir -p /tmp/digests
         echo "${{ steps.build.outputs.digest }}" > "/tmp/digests/${{ inputs.tag }}-${{ steps.plat.outputs.plat_tag }}.digest"
-
-    - name: Upload digest artifact (unique per platform)
+    - 
+      name: Upload digest artifact (unique per platform)
       uses: actions/upload-artifact@v4
       with:
         # artifact names must be unique in v4 (immutable/idempotent)  [oai_citation:4‡GitHub](https://github.com/actions/upload-artifact?utm_source=chatgpt.com)
