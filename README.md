@@ -1,19 +1,28 @@
 # hieupth/docker-actions
 
-A collection of reusable GitHub Actions for building and merging multi-platform Docker images using the **push-by-digest** pattern recommended by Docker.
+A collection of reusable GitHub Actions for building Docker images - from simple single-step builds to advanced multi-platform workflows for large images.
 
 ## Overview
 
-This repository provides two composite actions that work together:
+| Action | Purpose | Best For |
+|--------|---------|----------|
+| `docker-build-push` | Build and push a Docker image in a single step | **Small images**, simple workflows |
+| `docker-multiarch-build` | Build single-platform by digest + upload artifact | **Large images**, multi-platform parallel builds |
+| `docker-multiarch-merge` | Merge digests into multi-arch manifest | Multi-platform final step |
 
-| Action | Purpose |
-|--------|---------|
-| `docker-multiarch-build` | Build and push a **single-platform** image by digest, then upload the digest as an artifact |
-| `docker-multiarch-merge` | Download digest artifacts and create a **multi-arch manifest list** |
+### When to Use Which Action?
 
-### Why This Pattern?
+| Use Case | Recommended Action |
+|----------|-------------------|
+| Small image (< 2 GB), single platform | `docker-build-push` |
+| Small image (< 2 GB), multi-platform | `docker-build-push` with `platforms` |
+| Large image (5+ GB), multi-platform | `docker-multiarch-build` + `docker-multiarch-merge` |
+| Need fault isolation per platform | `docker-multiarch-build` + `docker-multiarch-merge` |
+| Want simplest possible workflow | `docker-build-push` |
 
-Unlike traditional multi-platform builds that use `docker buildx build` with multiple platforms in a single command, this approach:
+**Why the push-by-digest pattern for large images?**
+
+Unlike traditional multi-platform builds, the `docker-multiarch-*` actions:
 
 1. **Parallel execution**: Each platform builds independently in separate matrix jobs
 2. **Fault isolation**: One platform's failure doesn't affect others
@@ -78,7 +87,96 @@ Downloads digest artifacts created by `docker-multiarch-build`, then creates and
 
 ---
 
-## Example Workflow
+### 3. `docker-build-push`
+
+A simple all-in-one action to build and push Docker images. Perfect for small images when you don't need complex multi-platform workflows.
+
+**Typical usage**: Single-step build for small to medium images (< 2 GB), supporting both single and multi-platform builds in one command.
+
+#### Inputs
+
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `registry` | No | `docker.io` | Registry host for login |
+| `username` | Yes | - | Registry username |
+| `password` | Yes | - | Registry password/token |
+| `image` | Yes | - | Full image reference **with tag** (e.g., `docker.io/user/app:latest`) |
+| `platforms` | No | `linux/amd64` | Platform(s) comma-separated (e.g., `linux/amd64,linux/arm64`) |
+| `context` | No | `.` | Build context path |
+| `dockerfile` | No | `Dockerfile` | Dockerfile path |
+| `build_args` | No | `""` | Build args as newline-separated `KEY=VALUE` |
+| `push` | No | `true` | Push image to registry |
+
+#### Features
+
+- **All-in-one**: Free disk space → Setup → Login → Build → Push → Update description in one action
+- **Automatic disk cleanup**: Frees disk space before build using `jlumbroso/free-disk-space@v1.3.1`
+- **QEMU + Buildx**: Full cross-platform build support
+- **GitHub Actions cache**: Automatic layer caching for faster builds
+- **DockerHub description**: Auto-updates repository description from README.md
+
+---
+
+## Example Workflows
+
+### Quick Start: Simple Build (Small Images)
+
+For small images where you don't need complex workflows:
+
+```yaml
+name: Build and Push
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and push
+        uses: hieupth/docker-actions/docker-build-push@v1
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/myapp:latest
+```
+
+That's it - one action handles everything: disk cleanup, QEMU setup, login, build, push, and description update.
+
+---
+
+### Multi-Platform Build (Still Simple)
+
+For small images that need multi-platform support:
+
+```yaml
+name: Build Multi-Platform
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and push multi-platform
+        uses: hieupth/docker-actions/docker-build-push@v1
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          image: docker.io/${{ vars.DOCKERHUB_USERNAME }}/myapp:latest
+          platforms: linux/amd64,linux/arm64
+```
+
+---
+
+### Advanced: Large Images with Matrix Build
+
+For large images (5+ GB) or when you need parallel platform builds:
 
 ```yaml
 name: Build Multi-Platform Docker Images
@@ -251,6 +349,8 @@ docker buildx imagetools create \
 - `docker-multiarch-build` must upload unique artifact names per platform
 - `docker-multiarch-merge` downloads them using an artifact name pattern
 - The `artifact_prefix` must match between both actions
+- `docker-build-push` is simpler but uses more memory during multi-platform builds
+- For images 5+ GB with multiple platforms, prefer the `docker-multiarch-*` actions
 
 ## References
 
