@@ -9,7 +9,6 @@ inputs:
     required: true
   password:
     required: true
-
   image:
     required: true
     description: "Image ref WITHOUT tag. Example: docker.io/user/app"
@@ -19,24 +18,25 @@ inputs:
   platform:
     required: true
     description: "Single platform for this job. Example: linux/amd64"
-
   context:
     required: false
     default: .
   dockerfile:
     required: false
     default: dockerfile
-
   build_args:
     required: false
     default: ""
-
   artifact_prefix:
     required: false
     default: digests
   retention_days:
     required: false
     default: "1"
+  description_file:
+    required: false
+    default: README.md
+    description: "Path to description file for DockerHub (e.g., README.md, docs/README.md). Skips update if not found."
 
 runs:
   using: composite
@@ -52,6 +52,9 @@ runs:
         large-packages: true
         docker-images: true
         swap-storage: true
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
     - 
       name: Setup QEMU
       uses: docker/setup-qemu-action@v3
@@ -103,3 +106,11 @@ runs:
         path: /tmp/digests/*.digest
         if-no-files-found: error
         retention-days: ${{ inputs.retention_days }}
+    -
+      name: Update docker description
+      uses: hieupth/docker-actions/docker-description@main
+      with:
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        repository: ${{ inputs.image }}
+        description_file: ${{ inputs.description_file }}

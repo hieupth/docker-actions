@@ -1,0 +1,61 @@
+name: docker-description
+description: Update DockerHub repository description from a file (skips if file not found)
+
+inputs:
+  username:
+    required: true
+    description: DockerHub username
+  password:
+    required: true
+    description: DockerHub password/token
+  repository:
+    required: true
+    description: DockerHub repository (e.g., docker.io/user/app or user/app)
+  description_file:
+    required: false
+    default: README.md
+    description: "Path to description file (e.g., README.md, docs/README.md). Skips update if not found."
+
+runs:
+  using: composite
+  steps:
+    -
+      name: Check description file exists
+      id: check-desc
+      shell: bash
+      run: |
+        if [[ -f "${{ inputs.description_file }}" ]]; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "INFO: Description file '${{ inputs.description_file }}' found, will update DockerHub description"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "INFO: Description file '${{ inputs.description_file }}' not found, will checkout repository first"
+        fi
+    -
+      name: Checkout repository
+      if: steps.check-desc.outputs.exists != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.repository }}
+    -
+      name: Re-check description file after checkout
+      if: steps.check-desc.outputs.exists != 'true'
+      id: check-desc-after
+      shell: bash
+      run: |
+        if [[ -f "${{ inputs.description_file }}" ]]; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "INFO: Description file '${{ inputs.description_file }}' found after checkout, will update DockerHub description"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+          echo "INFO: Description file '${{ inputs.description_file }}' not found even after checkout, skipping DockerHub description update"
+        fi
+    -
+      name: Update DockerHub description
+      if: steps.check-desc-after.outputs.exists == 'true' || steps.check-desc.outputs.exists == 'true'
+      uses: peter-evans/dockerhub-description@v4
+      with:
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+        repository: ${{ inputs.repository }}
+        readme-filepath: ${{ inputs.description_file }}
