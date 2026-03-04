@@ -1,0 +1,58 @@
+site_name: Docker Actions
+site_description: Collection of reusable GitHub Actions for Docker workflows
+site_url: https://hieupth.github.io/gh-docker-actions/
+repo_url: https://github.com/hieupth/gh-docker-actions
+repo_name: hieupth/gh-docker-actions
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Actions:
+    - docker-dind: actions/docker-dind.md
+    - docker-build-push: actions/docker-build-push.md
+    - docker-multiarch-build: actions/docker-multiarch-build.md
+    - docker-multiarch-merge: actions/docker-multiarch-merge.md
+    - docker-description: actions/docker-description.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/hieupth
