@@ -1,0 +1,95 @@
+name: docker-dind
+description: Run commands inside a Docker container with TTY support and Docker-in-Docker capability
+
+inputs:
+  # === BACKWARD COMPATIBLE INPUTS ===
+  image:
+    description: Docker image to run
+    required: true
+  run:
+    description: Command to run inside container
+    required: false
+  shell:
+    description: Shell to use
+    required: false
+    default: bash
+  options:
+    description: Additional docker run options
+    required: false
+  registry:
+    description: Docker registry URL
+    required: false
+  username:
+    description: Registry username
+    required: false
+  password:
+    description: Registry password/token
+    required: false
+  docker_network:
+    description: Docker network ID
+    required: false
+    default: ${{ job.container.network }}
+
+  # === NEW INPUTS ===
+  workdir:
+    description: Working directory inside container
+    required: false
+  env:
+    description: Environment variables (newline-separated KEY=VALUE)
+    required: false
+  cleanup:
+    description: Remove container after execution
+    required: false
+    default: "true"
+  container_name:
+    description: Custom container name for debugging
+    required: false
+
+runs:
+  using: composite
+  steps:
+    -
+      name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@v1.3.1
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+    -
+      name: Setup QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: all
+    -
+      name: Setup Buildx
+      uses: docker/setup-buildx-action@v3
+    - 
+      name: Docker login
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+    - 
+      name: Set GitHub Path
+      run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+    - 
+      name: Run inside container
+      shell: 'script -q -e -c "bash --norc --noprofile -eo pipefail {0}"'
+      env:
+        INPUT_IMAGE: ${{ inputs.image }}
+        INPUT_RUN: ${{ inputs.run }}
+        INPUT_SHELL: ${{ inputs.shell }}
+        INPUT_OPTIONS: ${{ inputs.options }}
+        INPUT_REGISTRY: ${{ inputs.registry }}
+        INPUT_DOCKER_NETWORK: ${{ inputs.docker_network }}
+        INPUT_WORKDIR: ${{ inputs.workdir }}
+        INPUT_ENV: ${{ inputs.env }}
+        INPUT_CLEANUP: ${{ inputs.cleanup }}
+        INPUT_CONTAINER_NAME: ${{ inputs.container_name }}
+      run: entrypoint.sh
