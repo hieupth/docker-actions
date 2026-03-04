@@ -2,15 +2,22 @@
 set -euo pipefail
 
 # === PARSE INPUTS ===
-IMAGE="${INPUT_IMAGE}"
-RUN="${INPUT_RUN}"
+IMAGE="${INPUT_IMAGE:-}"
+RUN="${INPUT_RUN:-}"
 SHELL="${INPUT_SHELL:-bash}"
 OPTIONS="${INPUT_OPTIONS:-}"
 WORKDIR="${INPUT_WORKDIR:-}"
 ENV_INPUT="${INPUT_ENV:-}"
 CLEANUP="${INPUT_CLEANUP:-true}"
+DRY_RUN="${INPUT_DRY_RUN:-false}"
 CONTAINER_NAME="${INPUT_CONTAINER_NAME:-}"
 DOCKER_NETWORK="${INPUT_DOCKER_NETWORK:-}"
+
+# Validate required inputs
+if [[ -z "$IMAGE" ]]; then
+  echo "ERROR: 'image' input is required" >&2
+  exit 1
+fi
 
 # === BUILD DOCKER RUN COMMAND ===
 
@@ -22,12 +29,13 @@ if [[ "$CLEANUP" == "true" ]]; then
   FLAGS+=("--rm")
 fi
 
-# Container name
+# Container name (store in variable to avoid ${RANDOM} mismatch in logs)
 if [[ -n "$CONTAINER_NAME" ]]; then
-  FLAGS+=("--name" "$CONTAINER_NAME")
+  ACTUAL_CONTAINER_NAME="$CONTAINER_NAME"
 else
-  FLAGS+=("--name" "inside-container-${RANDOM}")
+  ACTUAL_CONTAINER_NAME="inside-container-${RANDOM}"
 fi
+FLAGS+=("--name" "$ACTUAL_CONTAINER_NAME")
 
 # Shell entrypoint
 FLAGS+=("--entrypoint" "$SHELL")
@@ -56,11 +64,13 @@ if [[ -n "$DOCKER_NETWORK" ]]; then
   FLAGS+=("--network" "$DOCKER_NETWORK")
 fi
 
-# User options
+# User options (support both single-line and multi-line forms)
 if [[ -n "$OPTIONS" ]]; then
-  # shellcheck disable=SC2206
-  OPTS_ARRAY=($OPTIONS)
-  FLAGS+=("${OPTS_ARRAY[@]}")
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    read -ra OPTS_ARRAY <<< "$line"
+    FLAGS+=("${OPTS_ARRAY[@]}")
+  done <<< "$OPTIONS"
 fi
 
 # TTY support
@@ -68,7 +78,13 @@ FLAGS+=("-it")
 
 # === EXECUTE ===
 echo "INFO: Running inside container: $IMAGE"
-echo "INFO: Container name: ${FLAGS[2]}"
+echo "INFO: Container name: $ACTUAL_CONTAINER_NAME"
+echo "INFO: Docker network: ${DOCKER_NETWORK:-default}"
+
+if [[ "$DRY_RUN" == "true" ]]; then
+  echo "INFO: Dry run enabled, skipping docker run"
+  exit 0
+fi
 
 # Multi-line command handling
 CMD="${RUN//$'\n'/;}"
