@@ -40,8 +40,6 @@ jobs:
           image: docker.io/user/app
           tag: v1.0.0
           platform: ${{ matrix.platform }}
-          context: .
-          dockerfile: Dockerfile
 ```
 
 ### With Build Args
@@ -63,29 +61,29 @@ jobs:
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `registry` | no | `docker.io` | Registry host |
+| `registry` | no | `docker.io` | Registry host for login |
 | `username` | yes | - | Registry username |
 | `password` | yes | - | Registry password/token |
 | `image` | yes | - | Image ref **WITHOUT tag** (e.g., `docker.io/user/app`) |
 | `tag` | yes | - | Single tag to publish |
 | `platform` | yes | - | Single platform (e.g., `linux/amd64`) |
 | `context` | no | `.` | Build context path |
-| `dockerfile` | no | `dockerfile` | Dockerfile path |
+| `dockerfile` | no | `Dockerfile` | Dockerfile path |
 | `build_args` | no | - | Build args (newline-separated KEY=VALUE) |
 | `artifact_prefix` | no | `digests` | Prefix for artifact name |
 | `retention_days` | no | `1` | Artifact retention days |
-| `description_file` | no | `README.md` | Path to description file for DockerHub |
+| `checkout` | no | `true` | Checkout repository before build |
 
 ## What It Does
 
-1. Free disk space (remove unused tools)
-2. Setup QEMU for cross-platform builds
-3. Setup Docker Buildx
-4. Login to registry
-5. Checkout repository
-6. Build and push **by digest** (not by tag)
-7. Upload digest as artifact
-8. Update DockerHub description (if file exists)
+1. Prepare Docker environment (uses [docker-prepare](docker-prepare.md)):
+   - Free disk space
+   - Setup QEMU for cross-platform builds
+   - Setup Docker Buildx
+   - Login to registry
+   - Checkout repository
+2. Build and push **by digest** (not by tag)
+3. Upload digest as artifact
 
 ## Why Push-by-Digest?
 

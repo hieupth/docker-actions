@@ -10,7 +10,7 @@ Collection of reusable GitHub Actions for Docker workflows.
 | [docker-build-push](actions/docker-build-push.md) | Build and push in one step | **Small images**, simple workflows |
 | [docker-multiarch-build](actions/docker-multiarch-build.md) | Build single-platform by digest | **Large images**, parallel builds |
 | [docker-multiarch-merge](actions/docker-multiarch-merge.md) | Merge digests into manifest | Multi-platform final step |
-| [docker-description](actions/docker-description.md) | Update DockerHub description | Post-push automation |
+| [docker-prepare](actions/docker-prepare.md) | Prepare Docker environment | *Internal use* |
 
 ## When to Use Which?
 

@@ -20,7 +20,6 @@ Build and push a Docker image (single or multi-platform) with automatic disk cle
 - Single or multi-platform builds
 - Automatic disk space cleanup
 - GitHub Actions cache support
-- Optional DockerHub description update
 
 ## Usage
 
@@ -76,13 +75,14 @@ Build and push a Docker image (single or multi-platform) with automatic disk cle
 | `build_args` | no | - | Build args (newline-separated KEY=VALUE) |
 | `cache` | no | `true` | Enable build cache |
 | `push` | no | `true` | Push image to registry |
-| `description_file` | no | `README.md` | Path to description file for DockerHub |
+| `checkout` | no | `true` | Checkout repository before build |
 
 ## What It Does
 
-1. Free disk space (remove unused tools)
-2. Setup QEMU for cross-platform builds
-3. Setup Docker Buildx
-4. Login to registry
-5. Build and push image
-6. Update DockerHub description (if file exists)
+1. Prepare Docker environment (uses [docker-prepare](docker-prepare.md)):
+   - Free disk space
+   - Setup QEMU for cross-platform builds
+   - Setup Docker Buildx
+   - Login to registry
+   - Checkout repository
+2. Build and push image

@@ -18,10 +18,11 @@ Run commands inside a Docker container with TTY support and Docker-in-Docker cap
 
 ## What It Does
 
-1. **Pulls the specified image** from a registry (with optional login)
-2. **Creates a container** with custom options (volumes, environment, network)
-3. **Runs your command** inside the container with TTY support
-4. **Cleans up** the container after execution (if `cleanup: true`)
+1. **Docker login** (optional, only if username/password provided)
+2. **Pulls the specified image** from a registry
+3. **Creates a container** with custom options (volumes, environment, network)
+4. **Runs your command** inside the container with TTY support
+5. **Cleans up** the container after execution (if `cleanup: true`)
 
 ## Usage
 
@@ -83,6 +84,7 @@ Run commands inside a Docker container with TTY support and Docker-in-Docker cap
 | `workdir` | no | - | Working directory inside container |
 | `env` | no | - | Environment variables (newline-separated KEY=VALUE) |
 | `cleanup` | no | `true` | Remove container after execution |
+| `dry_run` | no | `false` | Print resolved inputs and skip docker run |
 | `container_name` | no | auto-generated | Custom container name |
 
 ## Migration from inside-container-action

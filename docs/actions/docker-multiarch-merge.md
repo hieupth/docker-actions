@@ -14,7 +14,6 @@ Download digest artifacts and create a multi-arch manifest tag. Use after `docke
 
 - Download all platform digests
 - Create and push multi-arch manifest
-- Update DockerHub description
 
 ## Usage
 
@@ -88,17 +87,17 @@ jobs:
 | `tag` | yes | - | Single tag to publish |
 | `artifact_prefix` | no | `digests` | Prefix for artifact name (must match build) |
 | `digests_path` | no | `/tmp/digests` | Path to download digests |
-| `description_file` | no | `README.md` | Path to description file for DockerHub |
+| `checkout` | no | `true` | Checkout repository |
 
 ## What It Does
 
-1. Setup Docker Buildx
-2. Login to registry
-3. Download digest artifacts (pattern: `{artifact_prefix}-{tag}-*`)
-4. Checkout repository
-5. Create multi-arch manifest using `docker buildx imagetools create`
-6. Verify manifest with `docker buildx imagetools inspect`
-7. Update DockerHub description (if file exists)
+1. Prepare Docker environment (uses [docker-prepare](docker-prepare.md)):
+   - Setup Docker Buildx
+   - Login to registry
+   - Checkout repository
+2. Download digest artifacts (pattern: `{artifact_prefix}-{tag}-*`)
+3. Create multi-arch manifest using `docker buildx imagetools create`
+4. Verify manifest with `docker buildx imagetools inspect`
 
 ## How Manifest Merge Works
 

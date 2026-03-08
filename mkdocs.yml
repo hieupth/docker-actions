@@ -39,7 +39,7 @@ nav:
     - docker-build-push: actions/docker-build-push.md
     - docker-multiarch-build: actions/docker-multiarch-build.md
     - docker-multiarch-merge: actions/docker-multiarch-merge.md
-    - docker-description: actions/docker-description.md
+    - docker-prepare: actions/docker-prepare.md
 
 markdown_extensions:
   - admonition

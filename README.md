@@ -12,7 +12,6 @@ A collection of reusable GitHub Actions for Docker workflows.
 | [docker-build-push](https://hieupth.github.io/gh-docker-actions/actions/docker-build-push/) | Build and push images (single or multi-platform) |
 | [docker-multiarch-build](https://hieupth.github.io/gh-docker-actions/actions/docker-multiarch-build/) | Build single-platform, push by digest |
 | [docker-multiarch-merge](https://hieupth.github.io/gh-docker-actions/actions/docker-multiarch-merge/) | Merge multi-arch manifest |
-| [docker-description](https://hieupth.github.io/gh-docker-actions/actions/docker-description/) | Update DockerHub description |
 
 ## Quick Start
 
