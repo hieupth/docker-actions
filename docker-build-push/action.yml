@@ -53,7 +53,7 @@ runs:
   steps:
     -
       name: Prepare Docker environment
-      uses: hieupth/gh-docker-actions/docker-prepare@main
+      uses: hieupth/gh-docker-actions/docker-prepare@v1
       with:
         registry: ${{ inputs.registry }}
         username: ${{ inputs.username }}

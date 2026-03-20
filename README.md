@@ -1,6 +1,6 @@
-# Docker Actions
+# Github Docker Actions
 
-A collection of reusable GitHub Actions for Docker workflows.
+A small collection of reusable GitHub Actions related to Docker workflows.
 
 ## Actions
 
@@ -42,7 +42,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: hieupth/gh-docker-actions/docker-dind@main
+      - uses: hieupth/gh-docker-actions/docker-dind@v1
         with:
           image: golang:1.22
           run: |
@@ -80,7 +80,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: hieupth/gh-docker-actions/docker-build-push@main
+      - uses: hieupth/gh-docker-actions/docker-build-push@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -127,7 +127,7 @@ jobs:
         platform: [linux/amd64, linux/arm64]
     runs-on: ubuntu-latest
     steps:
-      - uses: hieupth/gh-docker-actions/docker-multiarch-build@main
+      - uses: hieupth/gh-docker-actions/docker-multiarch-build@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -168,7 +168,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: hieupth/gh-docker-actions/docker-multiarch-merge@main
+      - uses: hieupth/gh-docker-actions/docker-multiarch-merge@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
